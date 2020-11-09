@@ -3,36 +3,87 @@
         <van-search v-model="keyword" shape="round" background="#4fc08d" placeholder="请输入商品名或编号" @search="onSearch"
             show-action action-text="点我扫码" @cancel="onCancel" />
         <van-pull-refresh success-text="刷新成功" v-model="isLoading" @refresh="onRefresh">
-            <div class="van-hairline--surround">
+            <div class="van-doc-demo-block__card">
                 <van-card num="2" price="2.00" desc="描述信息" title="商品标题" thumb="https://img.yzcdn.cn/vant/ipad.jpeg">
                     <template #tags>
                         <van-tag plain type="danger">标签</van-tag>
                         <van-tag plain type="danger">标签</van-tag>
                     </template>
                     <template #footer>
-                        <van-button size="mini">-</van-button>
-                        <van-button size="mini">+</van-button>
+                        <van-stepper v-model="value" theme="round" button-size="22" disable-input />
                     </template>
                 </van-card>
             </div>
-            <div class="van-doc-demo-block__card"></div>
+
+            <div class="van-doc-demo-block__card">
+                <van-card num="2" price="2.00" desc="描述信息" title="商品标题1" thumb="https://img.yzcdn.cn/vant/ipad.jpeg">
+                    <template #tags>
+                        <van-tag plain type="danger">标签</van-tag>
+                        <van-tag plain type="danger">标签</van-tag>
+                    </template>
+                    <template #footer>
+                        <van-stepper v-model="value" theme="round" button-size="22" disable-input />
+                    </template>
+                </van-card>
+            </div>
+
+            <div class="van-doc-demo-block__card">
+                <van-card num="2" price="2.00" desc="描述信息" title="商品标题2" thumb="https://img.yzcdn.cn/vant/ipad.jpeg">
+                    <template #tags>
+                        <van-tag plain type="danger">标签</van-tag>
+                        <van-tag plain type="danger">标签</van-tag>
+                    </template>
+                    <template #footer>
+                        <van-stepper v-model="value" theme="round" button-size="22" disable-input />
+                    </template>
+                </van-card>
+            </div>
+
+            <div class="van-doc-demo-block__card">
+                <van-card num="2" price="2.00" desc="描述信息" title="商品标题3" thumb="https://img.yzcdn.cn/vant/ipad.jpeg">
+                    <template #tags>
+                        <van-tag plain type="danger">标签</van-tag>
+                        <van-tag plain type="danger">标签</van-tag>
+                    </template>
+                    <template #footer>
+                        <van-stepper v-model="value" theme="round" button-size="22" disable-input />
+                    </template>
+                </van-card>
+            </div>
+
+            <div class="van-doc-demo-block__card">
+                <van-card num="2" price="2.00" desc="描述信息" title="商品标题4" thumb="https://img.yzcdn.cn/vant/ipad.jpeg">
+                    <template #tags>
+                        <van-tag plain type="danger">标签</van-tag>
+                        <van-tag plain type="danger">标签</van-tag>
+                    </template>
+                    <template #footer>
+                        <van-stepper v-model="value" theme="round" button-size="22" disable-input />
+                    </template>
+                </van-card>
+            </div>
+
+            <div class="van-doc-demo-block__card">
+                <van-card num="2" price="2.00" desc="描述信息" title="商品标题5" thumb="https://img.yzcdn.cn/vant/ipad.jpeg">
+                    <template #tags>
+                        <van-tag plain type="danger">标签</van-tag>
+                        <van-tag plain type="danger">标签</van-tag>
+                    </template>
+                    <template #footer>
+                        <van-stepper v-model="value" theme="round" button-size="22" disable-input />
+                    </template>
+                </van-card>
+            </div>
         </van-pull-refresh>
     </div>
 </template>
 
 <script>
-import { Search, PullRefresh, Toast, Card, Button } from "vant";
-
 export default {
-    components: {
-        [Search.name]: Search,
-        [PullRefresh.name]: PullRefresh,
-        [Card.name]: Card,
-        [Button.name]: Button,
-    },
     name: "shop",
     data() {
         return {
+            value: 4,
             keyword: null,
             isLoading: false,
         };
@@ -47,7 +98,7 @@ export default {
         },
         onRefresh() {
             setTimeout(() => {
-                Toast("刷新成功");
+                this.$toast("刷新成功");
                 this.isLoading = false;
             }, 1000);
         },
@@ -78,6 +129,26 @@ export default {
         .van-search__action:active {
             background: radial-gradient(black, transparent);
         }
+    }
+
+    .van-doc-demo-block__title {
+        margin: 0;
+        padding: 32px 16px 16px;
+        color: rgba(69, 90, 100, 0.6);
+        font-weight: normal;
+        font-size: 14px;
+        line-height: 16px;
+    }
+    .van-doc-demo-block__card {
+        margin: 12px 12px 0;
+        overflow: hidden;
+        border-radius: 8px;
+    }
+    .van-doc-demo-block__title + .van-doc-demo-block__card {
+        margin-top: 0;
+    }
+    .van-doc-demo-block:first-of-type .van-doc-demo-block__title {
+        padding-top: 20px;
     }
 }
 </style>
