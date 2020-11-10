@@ -1,14 +1,16 @@
 <template>
-  <div class="home">
-  </div>
+    <div class="home">
+        <router-view></router-view>
+        <Tabbar></Tabbar>
+    </div>
 </template>
 
 <script>
-// @ is an alias to /src
-
+import Tabbar from '@/views/common/Tabbar'
 export default {
-  name: 'Home',
-  components: {
-  }
+    name: 'Home',
+    components: {
+        Tabbar,
+    }
 }
 </script>

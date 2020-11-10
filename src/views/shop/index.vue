@@ -33,12 +33,12 @@
         </van-submit-bar>
 
         <!-- 标签栏 -->
-        <van-tabbar v-model="active" active-color="#07c160" inactive-color="#000">
+        <!-- <van-tabbar v-model="active" active-color="#07c160" inactive-color="#000">
             <van-tabbar-item icon="shop-o">首页</van-tabbar-item>
             <van-tabbar-item icon="logistics">入库</van-tabbar-item>
             <van-tabbar-item icon="balance-o">收银</van-tabbar-item>
             <van-tabbar-item icon="user-o">我的</van-tabbar-item>
-        </van-tabbar>
+        </van-tabbar> -->
     </div>
 </template>
 
@@ -110,7 +110,7 @@ export default {
             padding: 0 14px 0 10px;
         }
         .van-search__action:active {
-            background: radial-gradient(black, transparent);
+            background: #004c0d;
         }
     }
 
