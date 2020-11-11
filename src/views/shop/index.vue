@@ -4,7 +4,7 @@
         <!-- <van-search v-model="keyword" shape="round" background="#4fc08d" placeholder="请输入商品名或编号" @search="onSearch" show-action action-text="点我扫码" @cancel="onCancel" /> -->
         <van-search v-model="keyword" shape="round" background="#4fc08d" placeholder="请输入商品名或编号" @search="onSearch" show-action>
             <template #action>
-                <van-icon name="scan" color="#fff" size="1.6rem" @click="onScan" style="display: flex;"></van-icon>
+                <van-icon name="scan" color="#fff" size="2rem" @click="onScan" style="display: flex;"></van-icon>
             </template>
         </van-search>
         <van-pull-refresh success-text="刷新成功" v-model="isLoading" @refresh="onRefresh">
@@ -33,7 +33,8 @@
 
         <!-- 提交 -->
         <van-submit-bar :price="3050" button-text="提交订单" @submit="onSubmit">
-            <van-checkbox v-model="checked" checked-color="#07c160" @change="checkAll">全选</van-checkbox>
+            <van-checkbox v-model="checked" checked-color="#07c160" @change="checkAll" style="margin-right: 20px">全选</van-checkbox>
+            <van-button round size="small" color="#ff6034">删除</van-button>
         </van-submit-bar>
 
     </div>

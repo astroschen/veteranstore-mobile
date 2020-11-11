@@ -1,7 +1,13 @@
 <!--  -->
 <template>
-    <div class=''>
-        <h1>入库</h1>
+    <div class='goods'>
+        <van-search v-model="keyword" shape="round" background="#4fc08d" placeholder="请输入商品名或编号" @search="onSearch" show-action>
+            <template #action>
+                <van-icon name="scan" color="#fff" size="2rem" @click="onScan" style="display: flex;"></van-icon>
+            </template>
+        </van-search>
+
+        
     </div>
 </template>
 
@@ -10,6 +16,7 @@
 //例如：import 《组件名称》 from '《组件路径》';
 
 export default {
+    name: '',
     //import引入的组件需要注入到对象中才能使用
     components: {},
     data() {
