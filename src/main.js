@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import { 
-    Search, PullRefresh, Toast, Card, Button, Stepper, Tag, 
+    Search, PullRefresh, Toast, Card, Button, Stepper, Tag, Icon, 
     SwipeCell, Tabbar, TabbarItem, SubmitBar,Checkbox, CheckboxGroup } from 'vant'
 import App from './App.vue'
 import router from './router'
@@ -14,6 +14,7 @@ createApp(App)
 .use(Button)
 .use(Stepper)
 .use(Tag)
+.use(Icon)
 .use(SwipeCell)
 .use(Tabbar)
 .use(TabbarItem)

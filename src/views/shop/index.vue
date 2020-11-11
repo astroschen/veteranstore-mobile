@@ -1,8 +1,12 @@
 <template>
     <div class="shop">
         <!-- 搜索 -->
-        <van-search v-model="keyword" shape="round" background="#4fc08d" placeholder="请输入商品名或编号" @search="onSearch" show-action action-text="点我扫码" @cancel="onCancel" />
-
+        <!-- <van-search v-model="keyword" shape="round" background="#4fc08d" placeholder="请输入商品名或编号" @search="onSearch" show-action action-text="点我扫码" @cancel="onCancel" /> -->
+        <van-search v-model="keyword" shape="round" background="#4fc08d" placeholder="请输入商品名或编号" @search="onSearch" show-action>
+            <template #action>
+                <van-icon name="scan" color="#fff" size="1.6rem" @click="onScan" style="display: flex;"></van-icon>
+            </template>
+        </van-search>
         <van-pull-refresh success-text="刷新成功" v-model="isLoading" @refresh="onRefresh">
 
             <van-swipe-cell v-for="(item, index) in data" :key="index">
@@ -32,13 +36,6 @@
             <van-checkbox v-model="checked" checked-color="#07c160" @change="checkAll">全选</van-checkbox>
         </van-submit-bar>
 
-        <!-- 标签栏 -->
-        <!-- <van-tabbar v-model="active" active-color="#07c160" inactive-color="#000">
-            <van-tabbar-item icon="shop-o">首页</van-tabbar-item>
-            <van-tabbar-item icon="logistics">入库</van-tabbar-item>
-            <van-tabbar-item icon="balance-o">收银</van-tabbar-item>
-            <van-tabbar-item icon="user-o">我的</van-tabbar-item>
-        </van-tabbar> -->
     </div>
 </template>
 
@@ -59,7 +56,7 @@ export default {
                 { name: '商品名称', info: '商品信息', price: parseInt(Math.random() * 100), num: 1, state: false },
                 { name: '商品名称', info: '商品信息', price: parseInt(Math.random() * 100), num: 1, state: false },
             ],
-            keyword: null,
+            keyword: '',
             isLoading: false,
         };
     },
@@ -67,7 +64,7 @@ export default {
         onSearch(e) {
             console.log(e);
         },
-        onCancel() {
+        onScan() {
             // TODO
             console.log("触发相机扫码");
         },
@@ -77,18 +74,20 @@ export default {
                 this.isLoading = false;
             }, 1000);
         },
-        checkAll(e){
-            console.log(e)
-            this.data.map(val=>{
-                val.state = e 
+        checkAll(e) {
+            this.data.map(val => {
+                val.state = e
             })
+        },
+        onSubmit() {
+
         },
     },
     mounted() { },
 };
 </script>
 
-<style lang="less" scope>
+<style lang="less">
 .shop {
     height: 100%;
     width: 100%;
@@ -99,7 +98,7 @@ export default {
         padding: 4px 0 0 0;
     }
     .van-search {
-        padding-right: 12px;
+        /* padding-right: 12px;
         .van-search__content--round {
             border-radius: 999px 0 0 999px;
         }
@@ -111,10 +110,13 @@ export default {
         }
         .van-search__action:active {
             background: #004c0d;
+        } */
+        .van-search__action:active {
+            background: transparent;
         }
     }
 
-    .van-stepper{
+    .van-stepper {
         margin-left: auto;
     }
 
@@ -151,7 +153,7 @@ export default {
     .van-tag--danger {
         margin: 0 4px 0 0;
     }
-    .van-submit-bar{
+    .van-submit-bar {
         bottom: 3.3rem;
         box-shadow: 0 0 10px #e6e6e6;
     }
