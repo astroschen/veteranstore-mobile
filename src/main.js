@@ -6,7 +6,10 @@ import 'vant/lib/index.css';
 import App from './App.vue'
 import router from './router'
 import store from './store'
+// 通用工具
 import util from '@/plugins/util'
+// 全局组件
+import '@/components/global'
 
 Vue.use(Search)
   .use(PullRefresh)

@@ -1,32 +1,14 @@
 <template>
   <div class="shop">
     <!-- 搜索 -->
-    <!-- <van-search v-model="keyword" shape="round" background="#4fc08d" placeholder="请输入商品名或编号" @search="onSearch" show-action action-text="点我扫码" @cancel="onCancel" /> -->
-    <van-search
-      v-model="keyword"
-      shape="round"
-      background="#4fc08d"
-      placeholder="请输入商品名或编号"
-      @search="onSearch"
-      show-action
-    >
-      <template #action>
-        <van-icon
-          name="scan"
-          color="#fff"
-          size="2rem"
-          @click="onScan"
-          style="display: flex"
-        ></van-icon>
-      </template>
-    </van-search>
+    <header-search ref="search" :data="searchData"></header-search>
     <!-- 下拉刷新 -->
     <van-pull-refresh
       success-text="刷新成功"
       v-model="isLoading"
       @refresh="onRefresh"
     >
-      <van-swipe-cell v-for="(item, index) in data" :key="index">
+      <van-swipe-cell v-for="(item, index) in goodsData" :key="index">
         <div class="van-doc-demo-block__card">
           <van-card
             :num="item.num"
@@ -70,19 +52,15 @@
 
     <!-- 提交 -->
     <van-submit-bar :price="getCount" button-text="提交订单" @submit="onSubmit">
-      <van-checkbox
-        v-model="checked"
-        checked-color="#07c160"
-        @click="checkAll"
-      >
+      <van-checkbox v-model="checked" checked-color="#07c160" @click="checkAll">
         全选
       </van-checkbox>
     </van-submit-bar>
 
     <!-- 加载弹窗 -->
-    <van-popup v-model="isLoadingPopup" get-container="shop">
+    <!-- <van-popup v-model="isLoadingPopup" get-container="shop">
       <van-loading type="spinner" />
-    </van-popup>
+    </van-popup> -->
   </div>
 </template>
 
@@ -94,7 +72,7 @@ export default {
       // 总数
       count: 0,
       checked: true,
-      data: [
+      goodsData: [
         { id: 'g01', name: '商品名称', info: '商品信息', price: 1, num: 1, state: true },
         { id: 'g02', name: '商品名称', info: '商品信息', price: 2.2, num: 1, state: true },
         { id: 'g03', name: '商品名称', info: '商品信息', price: 3, num: 1, state: true },
@@ -107,14 +85,18 @@ export default {
       ],
       keyword: '',
       isLoading: false,
-      isLoadingPopup: false
+      searchData: {
+        placeholder: '请输入商品名或编号',
+        data: {},
+        filter: {}
+      }
     };
   },
   computed: {
     getCount () {
       // 计算属性无法修改直接修改变量
       this.initCount()
-      this.data.map(val => {
+      this.goodsData.map(val => {
         if (val.state) {
           this.count += val.price * val.num
         }
@@ -131,18 +113,16 @@ export default {
     }
   },
   methods: {
+    requestSearchData(){
+
+    },
+    // 搜索完成的回调
+    onSearchBack (data) {
+      console.log(data)
+    },
     // 初始化合计
     initCount () {
       this.count = 0
-    },
-    // 搜索
-    onSearch (e) {
-      console.log(e);
-    },
-    // 扫码 
-    onScan () {
-      // TODO
-      console.log("触发相机扫码");
     },
     // 重新获取数据
     onRefresh () {
@@ -152,17 +132,17 @@ export default {
       }, 1000);
     },
     // 单选
-    checkOne(){
+    checkOne () {
       this.checked = true
-      this.data.map(val => {
-        if(!val.state){
+      this.goodsData.map(val => {
+        if (!val.state) {
           this.checked = false
         }
       })
     },
     // 全选
     checkAll () {
-      this.data.map(val => {
+      this.goodsData.map(val => {
         val.state = this.checked
       })
     },
@@ -172,19 +152,25 @@ export default {
     },
     // 删除
     removeGoods (item) {
+      let toast
       this.$dialog.confirm({
         message: '是否要删除此商品'
       }).then(() => {
-        this.isLoadingPopup = true
-        this.data.remove(item)
-        this.isLoadingPopup = false
-        this.$notify({ type: 'success', message: '删除成功！', duration: 1000 })
+        toast = this.$toast.loading({
+          message: '加载中...',
+          forbidClick: true,  // 背景不可点击
+          duration: 0, // 持续展示 toast
+        })
+        this.goodsData.remove(item)
+        // this.$notify({ type: 'success', message: '删除成功！', duration: 1000 })
+        toast.clear()
+        this.$toast.success({ message: '删除成功！', duration: 1000 })
       }).catch(() => {
-        this.isLoadingPopup = false
       })
     }
   },
-  mounted () { }
+  mounted () { 
+  }
 }
 </script>
 
