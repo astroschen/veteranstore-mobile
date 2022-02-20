@@ -86,7 +86,7 @@ export default {
       keyword: '',
       isLoading: false,
       searchData: {
-        placeholder: '请输入商品名或编号',
+        placeholder: '请输入商品名 或扫描条形码',
         data: {},
         filter: {}
       }

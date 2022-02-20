@@ -1,6 +1,6 @@
 <template>
     <div class="home">
-        <router-view></router-view>
+        <router-view replace to="/home"></router-view>
         <Tabbar></Tabbar>
     </div>
 </template>
@@ -8,7 +8,7 @@
 <script>
 import Tabbar from '@/views/common/Tabbar'
 export default {
-    name: 'Home',
+    name: 'index',
     components: {
         Tabbar,
     }

@@ -5,7 +5,7 @@
       v-model="keyword"
       shape="round"
       background="#4fc08d"
-      :placeholder="$util.getValue(data, 'placeholder', '请输入商品名或编号')"
+      :placeholder="$util.getValue(data, 'placeholder', '请输入商品名 或扫描条形码')"
       @search="onSearch"
       show-action
     >
@@ -55,6 +55,7 @@ export default {
     // 搜索
     onSearch (e) {
       console.log(e);
+      alert(e)
       this.$parent.onSearchBack('返回的数据')
     },
     // 扫码 
