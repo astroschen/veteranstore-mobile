@@ -30,6 +30,7 @@
 </template>
 <script>
 import Quagga from 'quagga'
+window.Quagga = Quagga
 export default {
   name: 'header-search',
   components: {},
@@ -37,7 +38,8 @@ export default {
   data () {
     return {
       keyword: '',
-      scanShow: false
+      scanShow: false,
+      sucAudio: null,
     }
   },
   computed: {},
@@ -63,43 +65,58 @@ export default {
     },
     // 初始化quagga
     initQuagga () {
-      Quagga.init({
+      window.Quagga.init({
         inputStream: {
-          name: "Live",
-          type: "LiveStream",
+          name: 'Live',
+          type: 'LiveStream',
           target: this.$refs.scan,
           constraints: {
-            width: 250,
-            height: 250
+            width: 300,
+            height: 300,
+            facingMode: 'environment'
           }
         },
         locator: {
-          patchSize: "medium",
+          // 码在摄像头视口的距离，移动端设置large,x-large会跟容易识别
+          patchSize: 'x-large',
           halfSample: true
         },
-        numOfWorkers: 2,
-        frequency: 10,
+        // numOfWorkers: 4,
+        // frequency: 10,
         decoder: {
-          readers: [{
+          /* readers: [{
             format: "code_128_reader",
             config: {}
-          }]
+          }] */
+          readers: ['ean_reader']
         },
-        locate: true
-      }, function (err) {
+        // locate: true
+      }, (err) => {
         if (err) {
           console.log(err)
           return
         }
         console.log("Initialization finished. Ready to start");
-        Quagga.start()
+        window.Quagga.start()
+        window.Quagga.onDetected(data => {
+          console.log(data.codeResult.code)
+          this.sucAudio.play()
+          this.cencleScan()
+        })
       })
     },
+    initSucScanAudio () {
+      this.sucAudio = new Audio()
+      this.sucAudio.src = require('@/assets/audio/successful_scan.mp3')
+    },
     cencleScan () {
+      window.Quagga && window.Quagga.stop()
       this.scanShow = false
     }
   },
-  created () { },
+  created () {
+    this.initSucScanAudio()
+  },
   mounted () { },
   beforeCreate () { },
   beforeMount () { },
@@ -118,8 +135,8 @@ export default {
   }
 
   .block {
-    width: 250px;
-    height: 250px;
+    width: 300px;
+    height: 300px;
     background-color: #fff;
   }
 }

@@ -22,5 +22,9 @@ module.exports = {
     // 这个选项不会影响 `*.vue` 文件。
 
     requireModuleExtension: true,
+  },
+  devServer: {
+    // 此处开启 https
+    https: true
   }
 }
