@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import { Search, PullRefresh, Toast, Card, Button, Stepper, Tag, Icon, SwipeCell,
    Tabbar, TabbarItem, SubmitBar, Checkbox, CheckboxGroup, Dialog, Loading, Popup,
-   Notify, Overlay } from 'vant'
+   Notify, Overlay, Sidebar, SidebarItem } from 'vant'
 import 'vant/lib/index.css';
 import App from './App.vue'
 import router from './router'
@@ -30,6 +30,8 @@ Vue.use(Search)
   .use(Popup)
   .use(Notify)
   .use(Overlay)
+  .use(Sidebar)
+  .use(SidebarItem)
 Vue.prototype.$util = util
 new Vue({
   router,

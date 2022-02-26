@@ -8,6 +8,12 @@
       v-model="isLoading"
       @refresh="onRefresh"
     >
+      <!-- 侧边导航 -->
+      <!-- <van-sidebar :value="goodsTypeList">
+        <van-sidebar-item title="标签名称" badge="5" />
+        <van-sidebar-item title="标签名称" badge="15" />
+        <van-sidebar-item title="标签名称" badge="25" />
+      </van-sidebar> -->
     </van-pull-refresh>
   </div>
 </template>
@@ -23,7 +29,7 @@ export default {
   data () {
     //这里存放数据
     return {
-      isLoading: false,
+      isLoading: false
     }
   },
   //监听属性 类似于data概念
