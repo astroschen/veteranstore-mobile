@@ -180,9 +180,8 @@ export default {
   width: 100%;
   position: fixed;
   .van-pull-refresh {
-    height: calc(100% - 108px);
+    height: calc(100% - 104px);
     overflow-y: auto;
-    padding: 4px 0 0 0;
   }
   .van-search {
     /* padding-right: 12px;

@@ -25,6 +25,15 @@ module.exports = {
   },
   devServer: {
     // 此处开启 https
-    https: true
+    https: true,
+    proxy: {
+      '/gds': {
+        target: 'https://bff.gds.org.cn/',
+        changeOrigin: true,
+        pathRewrite: {
+          '^/local': ''
+        }
+      },
+    }
   }
 }

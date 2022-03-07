@@ -1,10 +1,13 @@
 import Vue from 'vue'
-import { Search, PullRefresh, Toast, Card, Button, Stepper, Tag, Icon, SwipeCell,
-   Tabbar, TabbarItem, SubmitBar, Checkbox, CheckboxGroup, Dialog, Loading, Popup,
-   Notify, Overlay, Sidebar, SidebarItem } from 'vant'
+import {
+  Search, PullRefresh, Toast, Card, Button, Stepper, Tag, Icon, SwipeCell,
+  Tabbar, TabbarItem, SubmitBar, Checkbox, CheckboxGroup, Dialog, Loading, Popup,
+  Notify, Overlay, Sidebar, SidebarItem, Sticky
+} from 'vant'
 import 'vant/lib/index.css';
 import App from './App.vue'
 import router from './router'
+import axios from './plugins/axios/index'
 import store from './store'
 // 通用工具
 import util from '@/plugins/util'
@@ -32,7 +35,9 @@ Vue.use(Search)
   .use(Overlay)
   .use(Sidebar)
   .use(SidebarItem)
+  .use(Sticky)
 Vue.prototype.$util = util
+Vue.prototype.http = axios
 new Vue({
   router,
   store,

@@ -134,6 +134,7 @@ export const deleteRequest = url => {
 }
 
 export const axiosUtil = {
+  axios,
   post: postRequest,
   postJson: postRequestJson,
   put: putRequest,

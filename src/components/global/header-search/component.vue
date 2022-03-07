@@ -5,7 +5,9 @@
       v-model="keyword"
       shape="round"
       background="#4fc08d"
-      :placeholder="$util.getValue(data, 'placeholder', '请输入商品名 或扫描条形码')"
+      :placeholder="
+        $util.getValue(data, 'placeholder', '请输入商品名 或扫描条形码')
+      "
       @search="onSearch"
       show-action
     >
@@ -72,15 +74,15 @@ export default {
           type: 'LiveStream',
           target: this.$refs.scan,
           constraints: {
-            width: 300,
-            height: 300,
+            width: 600,
+            height: 800,
             facingMode: 'environment'
           }
         },
         locator: {
           // 码在摄像头视口的距离，移动端设置large,x-large会跟容易识别
-          patchSize: 'x-large',
-          halfSample: true
+          patchSize: 'medium',
+          // halfSample: true,
         },
         // numOfWorkers: 4,
         // frequency: 10,
@@ -89,18 +91,49 @@ export default {
             format: "code_128_reader",
             config: {}
           }] */
-          readers: ['ean_reader']
+          readers: ['ean_reader'],
+          // multiple: true,
+          debug: {
+            drawBoundingBox: true,
+            showFrequency: true,
+            drawScanline: true,
+            showPattern: true
+          }
         },
-        // locate: true
+        locate: true
       }, (err) => {
         if (err) {
           console.log(err)
           return
         }
-        console.log("Initialization finished. Ready to start");
+        console.log("Initialization finished. Ready to start")
         window.Quagga.start()
+        window.Quagga.onProcessed(result => {
+          var drawingCtx = window.Quagga.canvas.ctx.overlay,
+            drawingCanvas = window.Quagga.canvas.dom.overlay;
+          if (result) {
+            if (result.boxes) {
+              drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
+              result.boxes.filter(function (box) {
+                return box !== result.box;
+              }).forEach(function (box) {
+                window.Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, drawingCtx, { color: "green", lineWidth: 2 });
+              });
+            }
+
+            if (result.box) {
+              window.Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, drawingCtx, { color: "#00F", lineWidth: 2 });
+            }
+
+            if (result.codeResult && result.codeResult.code) {
+              window.Quagga.ImageDebug.drawPath(result.line, { x: 'x', y: 'y' }, drawingCtx, { color: 'red', lineWidth: 3 });
+            }
+          }
+        })
         window.Quagga.onDetected(data => {
-          console.log(data.codeResult.code)
+          console.log(data)
+          // alert(data.codeResult.code)
+          this.getScanData(data)
           this.sucAudio.play()
           this.cencleScan()
         })
@@ -111,14 +144,21 @@ export default {
       this.sucAudio.src = require('@/assets/audio/successful_scan.mp3')
     },
     cencleScan () {
+      window.Quagga.offDetected()
       window.Quagga && window.Quagga.stop()
       this.scanShow = false
+    },
+    getScanData (data) {
+      this.http.get(`https://www.mxnzp.com/api/barcode/goods/details?barcode=${data.codeResult.code}&app_id=puqsalfpnnsruwml&app_secret=ajZ0TEhFRnhIMmNGL0libTJaRTc4UT09`).then(res => {
+        console.log(res)
+      })
     }
   },
   created () {
     this.initSucScanAudio()
   },
-  mounted () { },
+  mounted () {
+  },
   beforeCreate () { },
   beforeMount () { },
   beforeUpdate () { },
@@ -136,8 +176,8 @@ export default {
   }
 
   .block {
-    width: 300px;
-    height: 300px;
+    width: 100%;
+    height: 100%;
     background-color: #fff;
   }
 }
