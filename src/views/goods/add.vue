@@ -1,0 +1,198 @@
+<template>
+  <div class="addgoods">
+    <div class="head" v-show="isShow">
+      <van-icon name="arrow-left" color="#fff" @click="back" />
+      <span class="title">添加商品</span>
+      <van-icon name="replay" color="#fff" @click="replay" />
+    </div>
+    <div>
+      <header-search
+        ref="search"
+        :fn="onSeach"
+        :config="{ show: false }"
+      ></header-search>
+      <van-cell-group inset>
+        <van-field
+          required
+          v-model="goods.S_CODE"
+          type="digit"
+          label="条形码"
+          placeholder="请输入条形码"
+        >
+          <template #button>
+            <van-button size="small" type="primary" @click="scanFn"
+              >扫描</van-button
+            >
+          </template>
+        </van-field>
+        <van-field
+          required
+          v-model="goods.S_NAME"
+          label="商品名称"
+          placeholder="请输入商品名称"
+        />
+        <van-field
+          required
+          v-model="goods.S_TYPE"
+          label="分类"
+          placeholder="请输入或选择分类"
+        >
+          <template #button>
+            <van-icon name="arrow" />
+          </template>
+        </van-field>
+        <van-field
+          required
+          v-model="goods.F_BUYING_PRICE"
+          type="number"
+          label="进货价"
+          placeholder="请输入进货价"
+        />
+        <van-field
+          required
+          v-model="goods.F_RETAIL_PRICE"
+          type="number"
+          label="零售价"
+          placeholder="请输入零售价"
+        />
+        <van-field
+          required
+          v-model="goods.S_CAPACITY"
+          label="规格"
+          placeholder="请输入规格"
+        />
+        <van-field
+          required
+          v-model="goods.S_UNIT"
+          label="单位"
+          placeholder="请输入单位"
+        />
+        <van-field
+          v-model="goods.S_BRAND"
+          label="品牌"
+          placeholder="请输入品牌"
+        />
+        <van-field
+          v-model="goods.S_SUPPLIER"
+          label="供货商"
+          placeholder="请输入供货商"
+        />
+        <van-field name="uploader" label="图片上传">
+          <template #input>
+            <van-uploader v-model="goods.url" multiple :max-count="1" />
+          </template>
+        </van-field>
+        <van-submit-bar button-text="确定添加" @submit="onSubmit" />
+      </van-cell-group>
+    </div>
+  </div>
+</template>
+
+<script>
+import { Dialog } from 'vant'
+import { requestProductType, requestProduct, addProductData } from '@/api/index'
+export default {
+  name: 'addgoods',
+  components: {},
+  data () {
+    return {
+      isShow: true,
+      goods: {},
+      requiredArr: ['S_CODE', 'S_NAME', 'S_TYPE', '']
+    }
+  },
+  computed: {},
+  watch: {},
+  methods: {
+    //返回上一层
+    back () {
+      this.$router.go(-1)
+    },
+    // 重置
+    replay () {
+      Dialog.confirm({
+        title: '重置提示',
+        message:
+          '确定要重置填写吗？确定后将填入的信息全部清除！',
+      }).then(() => {
+        console.log('确定重置')
+        this.goods = {}
+      }).catch(() => {
+        console.log('取消了')
+      });
+    },
+    // 扫描
+    scanFn () {
+      this.$refs.search.onScan()
+    },
+    // 搜索返回
+    onSeach (param) {
+      // 先判断数据库是否存在该商品 无则用在线数据填充
+      requestProduct({ code: param?.quagga?.codeResult?.code }).then(val => {
+        console.log('-----', val?.data)
+        if (Array.isArray(val?.data) && val?.data.length) {
+          this.goods = val?.data[0]
+          this.$toast({ message: '商品已存在', duration: 3000 })
+        } else {
+          this.setRefData(param)
+        }
+      }).catch(() => {
+      })
+    },
+    // 使用参考数据
+    setRefData (param) {
+      if (this.isObjEnpty(param?.referenc)) {
+        const data = param.referenc
+        this.goods = {
+          S_CODE: data.barcode,
+          S_NAME: data.goodsName,
+          S_BRAND: data.brand,
+          F_RETAIL_PRICE: data.price,
+          S_CAPACITY: data.standard,
+          S_SUPPLIER: data.supplier
+        }
+        this.$toast({ message: '已填入参考数据', duration: 3000 })
+      } else {
+        this.$toast({ message: '暂无参考数据，请核查条形码是否争取或手动填入商品信息', duration: 3000 })
+        this.goods = { S_CODE: param?.quagga?.codeResult?.code }
+      }
+    },
+    onSubmit () {
+      this.goods
+    },
+    isObjEnpty (obj) {
+      return (Object.keys(obj).length === 0 ? false : true)
+    }
+  },
+  created () {
+
+  },
+  mounted () {
+
+  }
+}
+</script>
+
+<style lang='less' scoped>
+.addgoods {
+  .head {
+    height: 54px;
+    background: #4fc08d;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+  }
+
+  .title {
+    color: #fff;
+    font-weight: bold;
+    font-size: 18px;
+  }
+
+  .van-submit-bar {
+    bottom: 3.3rem;
+    box-shadow: 0 0 10px #e6e6e6;
+  }
+}
+</style>

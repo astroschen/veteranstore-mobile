@@ -34,6 +34,13 @@ module.exports = {
           '^/local': ''
         }
       },
+      '/server': {
+        target: 'http://localhost:9527/',
+        changeOrigin: true,
+        pathRewrite: {
+          '^/server': '/'
+        }
+      }
     }
   }
 }

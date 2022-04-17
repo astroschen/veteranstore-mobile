@@ -2,6 +2,7 @@
 <template>
   <div class="header-search-warp">
     <van-search
+      v-show="isShow()"
       v-model="keyword"
       shape="round"
       background="#4fc08d"
@@ -36,7 +37,7 @@ window.Quagga = Quagga
 export default {
   name: 'header-search',
   components: {},
-  props: ['data', 'config'],
+  props: ['data', 'config', 'fn'],
   data () {
     return {
       keyword: '',
@@ -46,7 +47,7 @@ export default {
   },
   computed: {},
   watch: {
-    data (newdata, olddata) {
+    data (newdata) {
       // url请求模式/data数据过滤模式
       if (Object.prototype.hasOwnProperty.call(newdata, 'url')) {
       } else if (Object.prototype.hasOwnProperty.call(newdata, 'data')) {
@@ -54,11 +55,21 @@ export default {
     }
   },
   methods: {
+    // 是否显示
+    isShow () {
+      const val = this?.config?.show
+      if (typeof val === 'undefined') {
+        return true
+      } else if (val) {
+        return true
+      } else {
+        return false
+      }
+    },
     // 搜索
     onSearch (e) {
-      console.log(e);
-      alert(e)
-      this.$parent.onSearchBack('返回的数据')
+      // this.$parent.onSearchBack(e)
+      this.fn && this.fn(e)
     },
     // 扫码 
     onScan () {
@@ -131,11 +142,20 @@ export default {
           }
         })
         window.Quagga.onDetected(data => {
-          console.log(data)
-          // alert(data.codeResult.code)
-          this.getScanData(data)
-          this.sucAudio.play()
-          this.cencleScan()
+          const back = { referenc: {}, quagga: data }
+          // 获取在线参考数据
+          if (data?.codeResult?.code) {
+            this.http.get(`https://www.mxnzp.com/api/barcode/goods/details?barcode=${data.codeResult.code}&app_id=puqsalfpnnsruwml&app_secret=ajZ0TEhFRnhIMmNGL0libTJaRTc4UT09`).then(res => {
+              back.referenc = (res?.data?.code == 1 ? res?.data?.data : {})
+              this.sucAudio.play()
+              this.cencleScan()
+              this.fn && this.fn(back)
+            }).catch(() => {
+              this.sucAudio.play()
+              this.cencleScan()
+              this.fn && this.fn(back)
+            })
+          }
         })
       })
     },
@@ -149,9 +169,7 @@ export default {
       this.scanShow = false
     },
     getScanData (data) {
-      this.http.get(`https://www.mxnzp.com/api/barcode/goods/details?barcode=${data.codeResult.code}&app_id=puqsalfpnnsruwml&app_secret=ajZ0TEhFRnhIMmNGL0libTJaRTc4UT09`).then(res => {
-        console.log(res)
-      })
+
     }
   },
   created () {

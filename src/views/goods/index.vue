@@ -1,13 +1,13 @@
 <!--  -->
 <template>
-  <div class="goods">
+  <div class="goods-list">
     <!-- 添加 -->
     <div class="tools-btn">
       <van-button icon="replay" type="primary" @click="replayFn" />
-      <van-button icon="plus" type="primary" />
+      <van-button icon="plus" type="primary" @click="addFn" />
     </div>
     <!-- 搜索 -->
-    <header-search></header-search>
+    <header-search :fn="onSeach"></header-search>
     <van-pull-refresh
       success-text="刷新成功"
       v-model="isLoading"
@@ -17,11 +17,9 @@
       <!-- 侧边导航 -->
       <div class="sidebar-content">
         <van-sidebar v-model="listindex" @change="sidebarChange">
-          <van-sidebar-item title="洗漱用品洗漱用品" badge="1500" />
-          <van-sidebar-item title="饮料" badge="15" />
-          <van-sidebar-item title="洗漱用品" badge="25" />
-          <van-sidebar-item title="五金" badge="25" />
-          <van-sidebar-item title="零食" badge="25" />
+          <template v-for="item in tabData">
+            <van-sidebar-item :title="item.S_VALUE" :badge="item.I_COUNT" />
+          </template>
         </van-sidebar>
       </div>
       <!-- 商品卡片 -->
@@ -29,17 +27,30 @@
         <van-swipe-cell v-for="(item, index) in goodsData" :key="index">
           <div class="van-doc-demo-block__card">
             <van-card
-              :num="item.num"
-              :price="item.price"
-              :desc="item.info"
-              :title="item.name + '_' + index"
+              :title="item.S_NAME"
+              :desc="item.S_BRAND"
+              :price="item.F_RETAIL_PRICE"
+              :num="(item.S_COUNT || 0) + (item.S_UNIT || '')"
               thumb="https://img.yzcdn.cn/vant/ipad.jpeg"
             >
               <template #tags>
-                <van-tag plain type="danger">标签</van-tag>
-                <van-tag plain type="danger">标签</van-tag>
-                <van-tag plain type="danger">标签</van-tag>
-                <van-tag plain type="danger">标签</van-tag>
+                <van-tag v-if="item.S_CAPACITY" plain type="danger">{{
+                  "规格：" + item.S_CAPACITY
+                }}</van-tag>
+                <van-tag v-if="item.F_BUYING_PRICE" plain type="danger">{{
+                  "进货：" + item.F_BUYING_PRICE
+                }}</van-tag>
+                <van-tag v-if="item.F_RETAIL_PRICE" plain type="danger">{{
+                  "零售：" + item.F_RETAIL_PRICE
+                }}</van-tag>
+                <van-tag
+                  v-if="item.F_BUYING_PRICE && item.F_RETAIL_PRICE"
+                  plain
+                  type="danger"
+                  >{{
+                    "利润：" + (+item.F_RETAIL_PRICE - item.F_BUYING_PRICE)
+                  }}</van-tag
+                >
               </template>
               <template #footer> </template>
             </van-card>
@@ -73,8 +84,7 @@
 </template>
 
 <script>
-//这里可以导入其他文件（比如：组件，工具js，第三方插件js，json文件，图片文件等等）
-//例如：import 《组件名称》 from '《组件路径》';
+import { requestProductType, requestProduct } from '@/api/index'
 
 export default {
   name: '',
@@ -86,17 +96,8 @@ export default {
       isLoading: false,
       refreshDis: true,
       listindex: 0,
-      goodsData: [
-        { id: 'g01', name: '商品名称', info: '商品信息', price: 1, num: 1, state: true },
-        { id: 'g02', name: '商品名称', info: '商品信息', price: 2.2, num: 1, state: true },
-        { id: 'g03', name: '商品名称', info: '商品信息', price: 3, num: 1, state: true },
-        { id: 'g04', name: '商品名称', info: '商品信息', price: 1, num: 1, state: true },
-        { id: 'g05', name: '商品名称', info: '商品信息', price: 1, num: 1, state: true },
-        { id: 'g06', name: '商品名称', info: '商品信息', price: 1, num: 1, state: true },
-        { id: 'g07', name: '商品名称', info: '商品信息', price: 1, num: 1, state: true },
-        { id: 'g08', name: '商品名称', info: '商品信息', price: 1, num: 1, state: true },
-        { id: 'g09', name: '商品名称', info: '商品信息', price: 1, num: 1, state: true },
-      ],
+      goodsData: [],
+      tabData: []
     }
   },
   //监听属性 类似于data概念
@@ -105,23 +106,39 @@ export default {
   watch: {},
   //方法集合
   methods: {
+    // 获取类型
+    getProductType () {
+      requestProductType().then(val => {
+        this.tabData = val?.data
+        this.onRefresh()
+      })
+    },
     // 重新获取数据
     onRefresh () {
-      this.$toast("刷新成功");
-      this.isLoading = false;
+      // this.$toast("刷新成功");
+      requestProduct({ type: this.tabData[this.listindex].S_TYPE }).then(val => {
+        this.goodsData = val?.data
+        this.isLoading = false;
+        this.refreshDis = true;
+      })
     },
     // 类型切换
     sidebarChange (e) {
       this.listindex = e
+      this.onRefresh()
     },
     // 刷新
     replayFn () {
       this.refreshDis = false
       this.isLoading = true
-      setTimeout(() => {
-        this.isLoading = false
-        this.refreshDis = true
-      }, 1000)
+      this.getProductType()
+    },
+    onSeach (val) {
+      console.log('搜索后的回调方法：', val)
+      alert(val?.codeResult?.code)
+    },
+    addFn (val) {
+      this.$router.push('/addgoods')
     }
   },
   //生命周期 - 创建完成（可以访问当前this实例）
@@ -130,7 +147,7 @@ export default {
   },
   //生命周期 - 挂载完成（可以访问DOM元素）
   mounted () {
-
+    this.getProductType()
   },
   beforeCreate () { }, //生命周期 - 创建之前
   beforeMount () { }, //生命周期 - 挂载之前
@@ -142,13 +159,13 @@ export default {
 }
 </script>
 <style lang='less'>
-.goods {
+.goods-list {
   // dot
   .van-info {
     background-color: #156e40 !important;
     padding: 1px 4px !important;
   }
-  .van-sidebar-item{
+  .van-sidebar-item {
     padding: 20px 20px;
   }
   .van-sidebar-item--select::before {
@@ -157,7 +174,7 @@ export default {
 }
 </style>
 <style lang='less' scoped>
-.goods {
+.goods-list {
   width: 100%;
   height: 100%;
   position: fixed;
@@ -220,7 +237,8 @@ export default {
   }
 
   .van-tag--danger {
-    margin: 0 4px 0 0;
+    margin: 2px 4px 2px 0;
+    padding: 2px 4px;
   }
 }
 </style>

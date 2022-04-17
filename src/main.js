@@ -2,7 +2,7 @@ import Vue from 'vue'
 import {
   Search, PullRefresh, Toast, Card, Button, Stepper, Tag, Icon, SwipeCell,
   Tabbar, TabbarItem, SubmitBar, Checkbox, CheckboxGroup, Dialog, Loading, Popup,
-  Notify, Overlay, Sidebar, SidebarItem, Sticky
+  Notify, Overlay, Sidebar, SidebarItem, Sticky, Field, CellGroup, Uploader, Cell
 } from 'vant'
 import 'vant/lib/index.css';
 import App from './App.vue'
@@ -36,6 +36,10 @@ Vue.use(Search)
   .use(Sidebar)
   .use(SidebarItem)
   .use(Sticky)
+  .use(Field)
+  .use(CellGroup)
+  .use(Uploader)
+  .use(Cell)
 Vue.prototype.$util = util
 Vue.prototype.http = axios
 new Vue({
