@@ -59,6 +59,7 @@ export default {
     }
   },
   mounted () {
+    this.onChange('home')
   }
 }
 </script>

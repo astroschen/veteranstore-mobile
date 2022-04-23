@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import {
-  Search, PullRefresh, Toast, Card, Button, Stepper, Tag, Icon, SwipeCell,
+  Search, PullRefresh, Toast, Card, Button, Stepper, Tag, Icon, SwipeCell, Picker,
   Tabbar, TabbarItem, SubmitBar, Checkbox, CheckboxGroup, Dialog, Loading, Popup,
   Notify, Overlay, Sidebar, SidebarItem, Sticky, Field, CellGroup, Uploader, Cell
 } from 'vant'
@@ -23,6 +23,7 @@ Vue.use(Search)
   .use(Tag)
   .use(Icon)
   .use(SwipeCell)
+  .use(Picker)
   .use(Tabbar)
   .use(TabbarItem)
   .use(SubmitBar)

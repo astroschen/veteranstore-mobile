@@ -34,8 +34,8 @@
               thumb="https://img.yzcdn.cn/vant/ipad.jpeg"
             >
               <template #tags>
-                <van-tag v-if="item.S_CAPACITY" plain type="danger">{{
-                  "规格：" + item.S_CAPACITY
+                <van-tag v-if="item.I_COUNT" plain type="danger">{{
+                  "库存：" + item.I_COUNT + item.S_UNIT + '/' + item.S_CAPACITY
                 }}</van-tag>
                 <van-tag v-if="item.F_BUYING_PRICE" plain type="danger">{{
                   "进货：" + item.F_BUYING_PRICE
@@ -97,7 +97,9 @@ export default {
       refreshDis: true,
       listindex: 0,
       goodsData: [],
-      tabData: []
+      tabData: [],
+      // tab节流
+      tabflag: true
     }
   },
   //监听属性 类似于data概念
@@ -120,12 +122,18 @@ export default {
         this.goodsData = val?.data
         this.isLoading = false;
         this.refreshDis = true;
+        this.tabflag = true
+      }).catch(() => {
+        this.tabflag = true
       })
     },
     // 类型切换
     sidebarChange (e) {
-      this.listindex = e
-      this.onRefresh()
+      if (this.tabflag) {
+        this.tabflag = false
+        this.listindex = e
+        this.onRefresh()
+      }
     },
     // 刷新
     replayFn () {

@@ -33,14 +33,27 @@
         />
         <van-field
           required
-          v-model="goods.S_TYPE"
+          readonly
+          v-model="this.typeJson[goods.S_TYPE]"
           label="分类"
-          placeholder="请输入或选择分类"
+          placeholder="请选择已有分类"
+          @click="selType"
         >
           <template #button>
-            <van-icon name="arrow" />
+            <van-icon name="arrow" @click="selType" />
           </template>
         </van-field>
+        <!-- 分类弹窗 -->
+        <van-popup v-model="typeShow" round position="bottom">
+          <van-picker
+            title="选择分类"
+            show-toolbar
+            value-key="S_VALUE"
+            :columns="typeColumns"
+            @confirm="typeConfirm"
+            @cancel="typeShow = false"
+          />
+        </van-popup>
         <van-field
           required
           v-model="goods.F_BUYING_PRICE"
@@ -56,16 +69,30 @@
           placeholder="请输入零售价"
         />
         <van-field
+          readonly
+          v-if="goods.F_BUYING_PRICE && goods.F_RETAIL_PRICE"
+          :value="goods.F_RETAIL_PRICE - goods.F_BUYING_PRICE"
+          type="number"
+          label="利润"
+        />
+        <van-field
           required
           v-model="goods.S_CAPACITY"
           label="规格"
-          placeholder="请输入规格"
+          placeholder="请输入规格，例如250ml"
+        />
+        <van-field
+          required
+          v-model="goods.I_COUNT"
+          type="digit"
+          label="库存量"
+          placeholder="请输入库存量"
         />
         <van-field
           required
           v-model="goods.S_UNIT"
           label="单位"
-          placeholder="请输入单位"
+          placeholder="请输入单位，例如支、个、袋"
         />
         <van-field
           v-model="goods.S_BRAND"
@@ -82,7 +109,13 @@
             <van-uploader v-model="goods.url" multiple :max-count="1" />
           </template>
         </van-field>
-        <van-submit-bar button-text="确定添加" @submit="onSubmit" />
+        <van-submit-bar button-text="">
+          <template #button>
+            <van-button size="small" type="primary" @click="onSubmit"
+              >确认提交</van-button
+            >
+          </template>
+        </van-submit-bar>
       </van-cell-group>
     </div>
   </div>
@@ -90,7 +123,7 @@
 
 <script>
 import { Dialog } from 'vant'
-import { requestProductType, requestProduct, addProductData } from '@/api/index'
+import { getEnum, requestProduct, addProductData } from '@/api/index'
 export default {
   name: 'addgoods',
   components: {},
@@ -98,7 +131,9 @@ export default {
     return {
       isShow: true,
       goods: {},
-      requiredArr: ['S_CODE', 'S_NAME', 'S_TYPE', '']
+      typeColumns: [],
+      typeJson: {},
+      typeShow: false
     }
   },
   computed: {},
@@ -157,8 +192,28 @@ export default {
         this.goods = { S_CODE: param?.quagga?.codeResult?.code }
       }
     },
+    // 选择分类
+    selType () {
+      this.getType()
+      this.typeShow = true
+    },
+    getType () {
+      getEnum({ type: 'product_type' }).then(res => {
+        this.typeColumns = res?.data || []
+        this.typeColumns.forEach(val => {
+          this.typeJson[val.S_NAME] = val.S_VALUE
+        })
+      })
+    },
+    // 确认分类
+    typeConfirm (e) {
+      this.goods.S_TYPE = e.S_NAME
+      this.typeShow = false
+    },
     onSubmit () {
-      this.goods
+      addProductData(this.goods).then(res => {
+        console.log(res)
+      })
     },
     isObjEnpty (obj) {
       return (Object.keys(obj).length === 0 ? false : true)
@@ -168,7 +223,6 @@ export default {
 
   },
   mounted () {
-
   }
 }
 </script>
