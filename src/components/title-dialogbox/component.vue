@@ -129,7 +129,7 @@ export default {
       this.dialogdata = {}
       if (item && item.indexKey) {
         if (item.indexKey !== '') {
-          this.http.postJson('/service-digit-zb-screen-monitor/app/monitor/screenMonitor/getIndexData', { domainType: '6', indexKey: item.indexKey }).then(res => {
+          this.$http.postJson('/service-digit-zb-screen-monitor/app/monitor/screenMonitor/getIndexData', { domainType: '6', indexKey: item.indexKey }).then(res => {
             res = res?.data?.data
             try {
               res.indexData = JSON.parse(res.indexData)

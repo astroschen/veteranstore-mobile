@@ -5,7 +5,7 @@
       <span class="title">添加商品</span>
       <van-icon name="replay" color="#fff" @click="replay" />
     </div>
-    <div>
+    <div style="height: calc(100% - 160px); overflow-y: auto">
       <header-search
         ref="search"
         :fn="onSeach"
@@ -71,12 +71,11 @@
         <van-field
           readonly
           v-if="goods.F_BUYING_PRICE && goods.F_RETAIL_PRICE"
-          :value="goods.F_RETAIL_PRICE - goods.F_BUYING_PRICE"
+          :value="$np.minus(goods.F_RETAIL_PRICE, goods.F_BUYING_PRICE)"
           type="number"
           label="利润"
         />
         <van-field
-          required
           v-model="goods.S_CAPACITY"
           label="规格"
           placeholder="请输入规格，例如250ml"
@@ -106,22 +105,33 @@
         />
         <van-field name="uploader" label="图片上传">
           <template #input>
-            <van-uploader v-model="goods.url" multiple :max-count="1" />
+            <van-uploader
+              v-model="goods.url"
+              multiple
+              :max-count="1"
+              :before-read="beforeRead"
+              :after-read="afterRead"
+            />
           </template>
         </van-field>
-        <van-submit-bar button-text="">
-          <template #button>
-            <van-button size="small" type="primary" @click="onSubmit"
-              >确认提交</van-button
-            >
-          </template>
-        </van-submit-bar>
       </van-cell-group>
+      <van-submit-bar button-text="">
+        <template #button>
+          <van-button
+            round
+            type="primary"
+            color="linear-gradient(to right, #ff6034, #ee0a24)"
+            @click="onSubmit"
+            >确认提交</van-button
+          >
+        </template>
+      </van-submit-bar>
     </div>
   </div>
 </template>
 
 <script>
+import Compressor from 'compressorjs'
 import { Dialog } from 'vant'
 import { getEnum, requestProduct, addProductData } from '@/api/index'
 export default {
@@ -133,7 +143,8 @@ export default {
       goods: {},
       typeColumns: [],
       typeJson: {},
-      typeShow: false
+      typeShow: false,
+      requiredArr: ['S_CODE', 'S_NAME', 'S_TYPE', 'F_BUYING_PRICE', 'F_RETAIL_PRICE', 'I_COUNT', 'S_UNIT']
     }
   },
   computed: {},
@@ -154,7 +165,7 @@ export default {
         this.goods = {}
       }).catch(() => {
         console.log('取消了')
-      });
+      })
     },
     // 扫描
     scanFn () {
@@ -210,25 +221,73 @@ export default {
       this.goods.S_TYPE = e.S_NAME
       this.typeShow = false
     },
-    onSubmit () {
-      addProductData(this.goods).then(res => {
-        console.log(res)
+    isNull () {
+      let flag = false
+      this.requiredArr.forEach(val => {
+        if (!this.goods[val]) {
+          flag = true
+        }
       })
+      return flag
     },
+    // 添加提交
+    onSubmit () {
+      if (this.isNull()) {
+        this.$toast({ message: '带星号为必填项', duration: 3000 })
+      } else {
+        addProductData(this.goods).then(res => {
+          console.log(res)
+          if (res?.data?.data == 1) {
+            Dialog.confirm({
+              title: '添加成功提示',
+              message:
+                '商品添加成功！取消继续添加，确定返回列表',
+            }).then(() => {
+              this.$router.push('/goods')
+            }).catch(() => {
+              this.goods = {}
+            })
+          }
+        })
+      }
+    },
+    // 判断对象是不是为空
     isObjEnpty (obj) {
       return (Object.keys(obj).length === 0 ? false : true)
+    },
+    // 上传前压缩处理
+    beforeRead (file) {
+      return new Promise((resolve) => {
+        // compressorjs 默认开启 checkOrientation 选项
+        // 会将图片修正为正确方向
+        new Compressor(file, {
+          quality: 0,
+          success: resolve,
+          error (err) {
+            console.log(err.message)
+          },
+        })
+      })
+    },
+    afterRead (file) {
+      console.log('上传的文件-->', file)
+      this.goods.S_IMGURL = file.content
     }
   },
   created () {
 
   },
   mounted () {
+    this.getType()
   }
 }
 </script>
 
 <style lang='less' scoped>
 .addgoods {
+  height: 100%;
+  width: 100%;
+  position: fixed;
   .head {
     height: 54px;
     background: #4fc08d;

@@ -145,7 +145,7 @@ export default {
           const back = { referenc: {}, quagga: data }
           // 获取在线参考数据
           if (data?.codeResult?.code) {
-            this.http.get(`https://www.mxnzp.com/api/barcode/goods/details?barcode=${data.codeResult.code}&app_id=puqsalfpnnsruwml&app_secret=ajZ0TEhFRnhIMmNGL0libTJaRTc4UT09`).then(res => {
+            this.$http.get(`https://www.mxnzp.com/api/barcode/goods/details?barcode=${data.codeResult.code}&app_id=puqsalfpnnsruwml&app_secret=ajZ0TEhFRnhIMmNGL0libTJaRTc4UT09`).then(res => {
               back.referenc = (res?.data?.code == 1 ? res?.data?.data : {})
               this.sucAudio.play()
               this.cencleScan()

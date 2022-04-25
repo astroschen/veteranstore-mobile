@@ -113,7 +113,7 @@ export default {
     }
   },
   methods: {
-    requestSearchData(){
+    requestSearchData () {
 
     },
     // 搜索完成的回调
@@ -169,7 +169,7 @@ export default {
       })
     }
   },
-  mounted () { 
+  mounted () {
   }
 }
 </script>

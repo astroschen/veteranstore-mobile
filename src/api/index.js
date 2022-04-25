@@ -7,14 +7,14 @@ export const getEnum = (param) => {
 /**
  * 获取商品类型
  */
- export const requestProductType = (param) => {
+export const requestProductType = (param) => {
   return axiosUtil.post('/server/product/getProductType', param)
 }
 
 /**
  * 获取商品列表
  */
- export const requestProduct = (param) => {
+export const requestProduct = (param) => {
   return axiosUtil.post('/server/product/getProductData', param)
 }
 
@@ -23,4 +23,8 @@ export const getEnum = (param) => {
  */
 export const addProductData = (param) => {
   return axiosUtil.postJson('/server/product/addProductData', param)
+}
+
+export const delProductByCode = (param) => {
+  return axiosUtil.post('/server/product/delProductByCode', param)
 }

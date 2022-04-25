@@ -9,10 +9,10 @@
       @refresh="onRefresh"
     >
     </van-pull-refresh>
-    <h1>老兵超市-收银平台</h1>
+    <!-- <h1>老兵超市-收银平台</h1>
     <h1>本周收入</h1>
     <h1>月度收入</h1>
-    <h1>年度收入</h1>
+    <h1>年度收入</h1> -->
   </div>
 </template>
 

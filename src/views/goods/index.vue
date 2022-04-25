@@ -1,7 +1,6 @@
 <!--  -->
 <template>
   <div class="goods-list">
-    <!-- 添加 -->
     <div class="tools-btn">
       <van-button icon="replay" type="primary" @click="replayFn" />
       <van-button icon="plus" type="primary" @click="addFn" />
@@ -24,67 +23,84 @@
       </div>
       <!-- 商品卡片 -->
       <div class="card-content">
-        <van-swipe-cell v-for="(item, index) in goodsData" :key="index">
-          <div class="van-doc-demo-block__card">
-            <van-card
-              :title="item.S_NAME"
-              :desc="item.S_BRAND"
-              :price="item.F_RETAIL_PRICE"
-              :num="(item.S_COUNT || 0) + (item.S_UNIT || '')"
-              thumb="https://img.yzcdn.cn/vant/ipad.jpeg"
-            >
-              <template #tags>
-                <van-tag v-if="item.I_COUNT" plain type="danger">{{
-                  "库存：" + item.I_COUNT + item.S_UNIT + '/' + item.S_CAPACITY
-                }}</van-tag>
-                <van-tag v-if="item.F_BUYING_PRICE" plain type="danger">{{
-                  "进货：" + item.F_BUYING_PRICE
-                }}</van-tag>
-                <van-tag v-if="item.F_RETAIL_PRICE" plain type="danger">{{
+        <van-list
+          v-if="tabData.length"
+          v-model="listlLoading"
+          offset="10"
+          :finished="listFinished"
+          finished-text="没有更多了"
+          @load="onLoad"
+        >
+          <van-swipe-cell v-for="(item, index) in goodsData" :key="index">
+            <!-- <lazy-component> -->
+            <div class="van-doc-demo-block__card">
+              <van-card
+                :title="item.S_NAME"
+                :desc="item.S_BRAND"
+                :price="item.F_RETAIL_PRICE"
+                :num="(item.S_COUNT || 0) + (item.S_UNIT || '')"
+                :thumb="item.S_IMGURL || 'https://img.yzcdn.cn/vant/ipad.jpeg'"
+                :lazy-load="true"
+              >
+                <template #tags>
+                  <van-tag v-if="item.I_COUNT" plain type="danger">{{
+                    "库存：" +
+                    item.I_COUNT +
+                    item.S_UNIT +
+                    (item.S_CAPACITY ? "/" + item.S_CAPACITY : "")
+                  }}</van-tag>
+                  <van-tag v-if="item.F_BUYING_PRICE" plain type="danger">{{
+                    "进货：" + parseFloat(item.F_BUYING_PRICE)
+                  }}</van-tag>
+                  <!-- <van-tag v-if="item.F_RETAIL_PRICE" plain type="danger">{{
                   "零售：" + item.F_RETAIL_PRICE
-                }}</van-tag>
-                <van-tag
-                  v-if="item.F_BUYING_PRICE && item.F_RETAIL_PRICE"
-                  plain
-                  type="danger"
-                  >{{
-                    "利润：" + (+item.F_RETAIL_PRICE - item.F_BUYING_PRICE)
-                  }}</van-tag
-                >
-              </template>
-              <template #footer> </template>
-            </van-card>
-          </div>
-          <template #right>
-            <van-button
-              style="
-                height: 100%;
-                background-color: #156e40;
-                border-color: #156e40;
-              "
-              square
-              text="编辑"
-              type="primary"
-              class="delete-button"
-              @click="removeGoods(item)"
-            />
-            <van-button
-              style="height: 100%"
-              square
-              text="删除"
-              type="danger"
-              class="delete-button"
-              @click="removeGoods(item)"
-            />
-          </template>
-        </van-swipe-cell>
+                }}</van-tag> -->
+                  <van-tag
+                    v-if="item.F_BUYING_PRICE && item.F_RETAIL_PRICE"
+                    plain
+                    type="danger"
+                    >{{
+                      "利润：" +
+                      $np.minus(item.F_RETAIL_PRICE, item.F_BUYING_PRICE)
+                    }}</van-tag
+                  >
+                </template>
+                <template #footer> </template>
+              </van-card>
+            </div>
+            <template #right>
+              <van-button
+                style="
+                  height: 100%;
+                  background-color: #156e40;
+                  border-color: #156e40;
+                "
+                square
+                text="编辑"
+                type="primary"
+                class="delete-button"
+                @click="updateGoods(item)"
+              />
+              <van-button
+                style="height: 100%"
+                square
+                text="删除"
+                type="danger"
+                class="delete-button"
+                @click="removeGoods(item)"
+              />
+            </template>
+            <!-- </lazy-component> -->
+          </van-swipe-cell>
+        </van-list>
       </div>
     </van-pull-refresh>
   </div>
 </template>
 
 <script>
-import { requestProductType, requestProduct } from '@/api/index'
+import { requestProductType, requestProduct, delProductByCode } from '@/api/index'
+import { Dialog } from 'vant'
 
 export default {
   name: '',
@@ -99,7 +115,13 @@ export default {
       goodsData: [],
       tabData: [],
       // tab节流
-      tabflag: true
+      tabflag: true,
+      // 当前列表数据加载
+      listlLoading: false,
+      listFinished: false,
+      // 分页
+      pageNo: 1,
+      pageSize: 10
     }
   },
   //监听属性 类似于data概念
@@ -111,18 +133,26 @@ export default {
     // 获取类型
     getProductType () {
       requestProductType().then(val => {
-        this.tabData = val?.data
-        this.onRefresh()
+        this.$set(this, 'tabData', val?.data || [])
       })
     },
-    // 重新获取数据
+    // 获取数据
     onRefresh () {
-      // this.$toast("刷新成功");
-      requestProduct({ type: this.tabData[this.listindex].S_TYPE }).then(val => {
-        this.goodsData = val?.data
-        this.isLoading = false;
-        this.refreshDis = true;
+      requestProduct({ type: this.tabData[this.listindex].S_TYPE, pageNo: this.pageNo, pageSize: this.pageSize }).then(val => {
+        console.log('当前tab类型的商品数据--->', val)
+        this.$set(this, 'goodsData', [...this.goodsData, ...val?.data])
+        this.isLoading = false
+        this.refreshDis = true
         this.tabflag = true
+
+        this.listlLoading = false
+        if (val?.data.length == 0 || this.goodsData.length >= val?.data[0].totalCount) {
+          this.listFinished = true
+        } else {
+          this.pageNo += 1
+          this.listFinished = false
+        }
+        console.log(this.listFinished)
       }).catch(() => {
         this.tabflag = true
       })
@@ -130,6 +160,10 @@ export default {
     // 类型切换
     sidebarChange (e) {
       if (this.tabflag) {
+        this.$set(this, 'goodsData', [])
+        this.pageNo = 1
+        this.listlLoading = false
+        this.listFinished = false
         this.tabflag = false
         this.listindex = e
         this.onRefresh()
@@ -140,13 +174,40 @@ export default {
       this.refreshDis = false
       this.isLoading = true
       this.getProductType()
+      this.sidebarChange(0)
+    },
+    onLoad () {
+      console.log('onLoad触发')
+      if (this.tabflag) {
+        setTimeout(this.onRefresh, 0)
+      }
     },
     onSeach (val) {
       console.log('搜索后的回调方法：', val)
       alert(val?.codeResult?.code)
     },
-    addFn (val) {
+    addFn () {
       this.$router.push('/addgoods')
+    },
+    // 删除商品
+    removeGoods (val) {
+      console.log('删除的商品数据--->', val)
+      Dialog.confirm({
+        title: '删除提示',
+        message:
+          '确定删除选择商品？',
+      }).then(() => {
+        delProductByCode({ code: val.S_CODE }).then(res => {
+          if (res?.data?.data == 1) {
+            this.$toast({ message: '删除成功', duration: 3000 })
+          } else {
+            this.$toast({ message: '删除失败', duration: 3000 })
+          }
+          this.replayFn()
+        })
+      }).catch(() => {
+        console.log('取消删除')
+      })
     }
   },
   //生命周期 - 创建完成（可以访问当前this实例）
