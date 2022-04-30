@@ -16,9 +16,14 @@ const routes = [
       path: 'goods',
       name: 'goods',
       component: () => import('@/views/goods'),
-    },{
+    }, {
       path: 'addgoods',
       name: 'addgoods',
+      component: () => import('@/views/goods/add'),
+    }, {
+      path: 'addgoods/:code',
+      name: 'updategoods',
+      props: true,
       component: () => import('@/views/goods/add'),
     }, {
       path: 'shop',

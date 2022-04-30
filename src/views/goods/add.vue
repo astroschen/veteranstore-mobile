@@ -2,7 +2,7 @@
   <div class="addgoods">
     <div class="head" v-show="isShow">
       <van-icon name="arrow-left" color="#fff" @click="back" />
-      <span class="title">添加商品</span>
+      <span class="title">{{ title }}商品</span>
       <van-icon name="replay" color="#fff" @click="replay" />
     </div>
     <div style="height: calc(100% - 160px); overflow-y: auto">
@@ -106,12 +106,18 @@
         <van-field name="uploader" label="图片上传">
           <template #input>
             <van-uploader
-              v-model="goods.url"
+              v-model="imgArr"
               multiple
               :max-count="1"
               :before-read="beforeRead"
               :after-read="afterRead"
+              @delete="delImg"
             />
+            <!-- <van-uploader v-model="goods.S_IMGURL">
+              <template #preview-cover="{ file }">
+                <div class="preview-cover van-ellipsis">{{ file }}</div>
+              </template>
+            </van-uploader> -->
           </template>
         </van-field>
       </van-cell-group>
@@ -122,7 +128,7 @@
             type="primary"
             color="linear-gradient(to right, #ff6034, #ee0a24)"
             @click="onSubmit"
-            >确认提交</van-button
+            >确认{{ title }}</van-button
           >
         </template>
       </van-submit-bar>
@@ -133,18 +139,21 @@
 <script>
 import Compressor from 'compressorjs'
 import { Dialog } from 'vant'
-import { getEnum, requestProduct, addProductData } from '@/api/index'
+import { getEnum, requestProduct, addProductData, updateProductData } from '@/api/index'
 export default {
   name: 'addgoods',
+  props: ['code'],
   components: {},
   data () {
     return {
+      title: '添加',
       isShow: true,
       goods: {},
       typeColumns: [],
       typeJson: {},
       typeShow: false,
-      requiredArr: ['S_CODE', 'S_NAME', 'S_TYPE', 'F_BUYING_PRICE', 'F_RETAIL_PRICE', 'I_COUNT', 'S_UNIT']
+      requiredArr: ['S_CODE', 'S_NAME', 'S_TYPE', 'F_BUYING_PRICE', 'F_RETAIL_PRICE', 'I_COUNT', 'S_UNIT'],
+      imgArr: []
     }
   },
   computed: {},
@@ -178,7 +187,13 @@ export default {
         console.log('-----', val?.data)
         if (Array.isArray(val?.data) && val?.data.length) {
           this.goods = val?.data[0]
+          if (val?.data[0].S_IMGURL) {
+            this.imgArr = [{ url: val?.data[0].S_IMGURL, isImage: true }]
+          } else {
+            this.goods.S_IMGURL = ''
+          }
           this.$toast({ message: '商品已存在', duration: 3000 })
+          this.title = '修改'
         } else {
           this.setRefData(param)
         }
@@ -199,7 +214,7 @@ export default {
         }
         this.$toast({ message: '已填入参考数据', duration: 3000 })
       } else {
-        this.$toast({ message: '暂无参考数据，请核查条形码是否争取或手动填入商品信息', duration: 3000 })
+        this.$toast({ message: '暂无参考数据，请核查条形码是否正确', duration: 3000 })
         this.goods = { S_CODE: param?.quagga?.codeResult?.code }
       }
     },
@@ -235,21 +250,40 @@ export default {
       if (this.isNull()) {
         this.$toast({ message: '带星号为必填项', duration: 3000 })
       } else {
-        addProductData(this.goods).then(res => {
-          console.log(res)
-          if (res?.data?.data == 1) {
-            Dialog.confirm({
-              title: '添加成功提示',
-              message:
-                '商品添加成功！取消继续添加，确定返回列表',
-            }).then(() => {
-              this.$router.push('/goods')
-            }).catch(() => {
-              this.goods = {}
-            })
-          }
-        })
+        if (this.title === '添加') {
+          addProductData(this.goods).then(res => {
+            if (res?.data?.data == 1) {
+              this.showConfirm(() => {
+                this.$router.push('/goods')
+              }, () => {
+                this.goods = {}
+              })
+            }
+          })
+        } else {
+          updateProductData(this.goods).then(res => {
+            if (res?.data?.data == 1) {
+              this.showConfirm(() => {
+                this.$router.push('/goods')
+              })
+            }
+          })
+        }
+
       }
+    },
+    showConfirm (confirm, cancel) {
+      Dialog.confirm({
+        title: `${this.title}成功提示`,
+        confirmButtonText: '返回列表',
+        cancelButtonText: `继续${this.title}`,
+        message:
+          `商品${this.title}成功！`,
+      }).then(() => {
+        confirm && confirm()
+      }).catch(() => {
+        cancel && cancel()
+      })
     },
     // 判断对象是不是为空
     isObjEnpty (obj) {
@@ -259,8 +293,8 @@ export default {
     beforeRead (file) {
       return new Promise((resolve) => {
         // compressorjs 默认开启 checkOrientation 选项
-        // 会将图片修正为正确方向
         new Compressor(file, {
+          // 压缩到100kb左右
           quality: 0,
           success: resolve,
           error (err) {
@@ -272,13 +306,28 @@ export default {
     afterRead (file) {
       console.log('上传的文件-->', file)
       this.goods.S_IMGURL = file.content
+    },
+    delImg () {
+      this.goods.S_IMGURL = ''
     }
   },
-  created () {
-
-  },
+  created () { },
   mounted () {
     this.getType()
+    if (this.$route.params.code) {
+      this.title = '修改'
+      requestProduct({ code: this.$route.params.code }).then(item => {
+        if (Array.isArray(item?.data) && item?.data.length) {
+          this.goods = item?.data[0]
+          if (item?.data[0].S_IMGURL) {
+            this.imgArr = [{ url: item?.data[0].S_IMGURL, isImage: true }]
+          } else {
+            this.goods.S_IMGURL = ''
+          }
+        }
+      }).catch(() => {
+      })
+    }
   }
 }
 </script>
@@ -306,6 +355,18 @@ export default {
   .van-submit-bar {
     bottom: 3.3rem;
     box-shadow: 0 0 10px #e6e6e6;
+  }
+
+  .preview-cover {
+    position: absolute;
+    bottom: 0;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 4px;
+    color: #fff;
+    font-size: 12px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.3);
   }
 }
 </style>

@@ -35,31 +35,35 @@ export default {
   watch: {
     $route () {
       let val = 'home'
-      switch (this.$route.path) {
-        case "/home": val = 'home'
+      console.log('当前路由--->', this.$route.path)
+      const arr = this.$route.path.split('/')
+      const fil = arr.filter(item => { return item })
+      switch (fil[0]) {
+        case 'home': val = 'home'
           break
-        case "/addgoods":
-        case "/goods": val = 'goods'
+        case 'addgoods':
+        case 'goods': val = 'goods'
           break
-        case "/shop": val = 'shop'
+        case 'shop': val = 'shop'
           break
-        case "/user": val = 'user'
+        case 'user': val = 'user'
           break
         default:
           break
       }
-      console.log(val)
       this.$store.commit('common/CHANGE', { key: 'tabbar', value: val.toString() })
     }
   },
   methods: {
     onChange (val) {
-      this.$store.commit('common/CHANGE', { key: 'tabbar', value: val.toString() })
-      this.$router.push('/' + val)
+      const arr = val.split('/')
+      const fil = arr.filter(item => { return item })
+      this.$store.commit('common/CHANGE', { key: 'tabbar', value: fil[0].toString() })
+      this.$router.push(fil[0] === '/' ? val : '/' + val)
     }
   },
   mounted () {
-    this.onChange('home')
+    // this.onChange(this.$route.path)
   }
 }
 </script>

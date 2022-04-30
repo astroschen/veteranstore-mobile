@@ -38,16 +38,19 @@
                 :title="item.S_NAME"
                 :desc="item.S_BRAND"
                 :price="item.F_RETAIL_PRICE"
-                :num="(item.S_COUNT || 0) + (item.S_UNIT || '')"
+                :num="(item.I_COUNT || 0) + (item.S_UNIT || '')"
                 :thumb="item.S_IMGURL || 'https://img.yzcdn.cn/vant/ipad.jpeg'"
                 :lazy-load="true"
               >
                 <template #tags>
-                  <van-tag v-if="item.I_COUNT" plain type="danger">{{
+                  <!-- <van-tag v-if="item.I_COUNT" plain type="danger">{{
                     "库存：" +
                     item.I_COUNT +
                     item.S_UNIT +
                     (item.S_CAPACITY ? "/" + item.S_CAPACITY : "")
+                  }}</van-tag> -->
+                  <van-tag v-if="item.S_CAPACITY" plain type="danger">{{
+                    "规格：" + item.S_CAPACITY
                   }}</van-tag>
                   <van-tag v-if="item.F_BUYING_PRICE" plain type="danger">{{
                     "进货：" + parseFloat(item.F_BUYING_PRICE)
@@ -152,7 +155,6 @@ export default {
           this.pageNo += 1
           this.listFinished = false
         }
-        console.log(this.listFinished)
       }).catch(() => {
         this.tabflag = true
       })
@@ -184,7 +186,7 @@ export default {
     },
     onSeach (val) {
       console.log('搜索后的回调方法：', val)
-      alert(val?.codeResult?.code)
+      alert(val?.quagga?.codeResult?.code)
     },
     addFn () {
       this.$router.push('/addgoods')
@@ -208,6 +210,10 @@ export default {
       }).catch(() => {
         console.log('取消删除')
       })
+    },
+    // 编辑商品
+    updateGoods (val) {
+      this.$router.push({ path: `/addgoods/${val?.S_CODE}` })
     }
   },
   //生命周期 - 创建完成（可以访问当前this实例）

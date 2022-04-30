@@ -25,6 +25,16 @@ export const addProductData = (param) => {
   return axiosUtil.postJson('/server/product/addProductData', param)
 }
 
+/**
+ * 删除
+ */
 export const delProductByCode = (param) => {
   return axiosUtil.post('/server/product/delProductByCode', param)
+}
+
+/**
+ * 修改
+ */
+ export const updateProductData = (param) => {
+  return axiosUtil.postJson('/server/product/updateProductData', param)
 }
