@@ -139,7 +139,7 @@
 <script>
 import Compressor from 'compressorjs'
 import { Dialog } from 'vant'
-import { getEnum, requestProduct, addProductData, updateProductData } from '@/api/index'
+import { getEnum, requestProduct, addProductData, updateProductData } from '@/api/common/product'
 export default {
   name: 'addgoods',
   props: ['code'],
@@ -171,6 +171,8 @@ export default {
           '确定要重置填写吗？确定后将填入的信息全部清除！',
       }).then(() => {
         console.log('确定重置')
+        this.title = '修改'
+        this.$set(this, 'imgArr', [])
         this.goods = {}
       }).catch(() => {
         console.log('取消了')
@@ -188,7 +190,7 @@ export default {
         if (Array.isArray(val?.data) && val?.data.length) {
           this.goods = val?.data[0]
           if (val?.data[0].S_IMGURL) {
-            this.imgArr = [{ url: val?.data[0].S_IMGURL, isImage: true }]
+            this.$set(this, 'imgArr', [{ url: val?.data[0].S_IMGURL, isImage: true }])
           } else {
             this.goods.S_IMGURL = ''
           }
@@ -320,7 +322,7 @@ export default {
         if (Array.isArray(item?.data) && item?.data.length) {
           this.goods = item?.data[0]
           if (item?.data[0].S_IMGURL) {
-            this.imgArr = [{ url: item?.data[0].S_IMGURL, isImage: true }]
+            this.$set(this, 'imgArr', [{ url: item?.data[0].S_IMGURL, isImage: true }])
           } else {
             this.goods.S_IMGURL = ''
           }

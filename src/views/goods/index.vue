@@ -46,7 +46,7 @@
                   <!-- <van-tag v-if="item.I_COUNT" plain type="danger">{{
                     "库存：" +
                     item.I_COUNT +
-                    item.S_UNIT +
+                    (item.S_UNIT || '个') +
                     (item.S_CAPACITY ? "/" + item.S_CAPACITY : "")
                   }}</van-tag> -->
                   <van-tag v-if="item.S_CAPACITY" plain type="danger">{{
@@ -102,7 +102,7 @@
 </template>
 
 <script>
-import { requestProductType, requestProduct, delProductByCode } from '@/api/index'
+import { requestProductType, requestProductPage, delProductByCode } from '@/api/common/product'
 import { Dialog } from 'vant'
 
 export default {
@@ -114,8 +114,11 @@ export default {
     return {
       isLoading: false,
       refreshDis: true,
+      // 当前分类索引
       listindex: 0,
+      // 商品列表数据
       goodsData: [],
+      // 分类列表数据
       tabData: [],
       // tab节流
       tabflag: true,
@@ -124,7 +127,9 @@ export default {
       listFinished: false,
       // 分页
       pageNo: 1,
-      pageSize: 10
+      pageSize: 10,
+      // 关键词
+      keyword: ''
     }
   },
   //监听属性 类似于data概念
@@ -135,13 +140,14 @@ export default {
   methods: {
     // 获取类型
     getProductType () {
-      requestProductType().then(val => {
+      requestProductType({ name: this.keyword }).then(val => {
+        console.log(val)
         this.$set(this, 'tabData', val?.data || [])
       })
     },
     // 获取数据
     onRefresh () {
-      requestProduct({ type: this.tabData[this.listindex].S_TYPE, pageNo: this.pageNo, pageSize: this.pageSize }).then(val => {
+      requestProductPage({ name: this.keyword, type: this.tabData[this.listindex].S_TYPE, pageNo: this.pageNo, pageSize: this.pageSize }).then(val => {
         console.log('当前tab类型的商品数据--->', val)
         this.$set(this, 'goodsData', [...this.goodsData, ...val?.data])
         this.isLoading = false
@@ -186,7 +192,34 @@ export default {
     },
     onSeach (val) {
       console.log('搜索后的回调方法：', val)
-      alert(val?.quagga?.codeResult?.code)
+      // 回参会返回搜索条件  0 清除状态 1 条形码查询或扫码状态 2 搜索关键词状态
+      switch (val.code) {
+        case 0:
+          this.keyword = ''
+          this.replayFn()
+          break
+        case 1:
+          if (val.data.length) {
+            // 数据库中存在直接弹该商品详情窗
+            this.$toast('查出' + val.keyword + '相关' + val.data.length + '条数据')
+            this.keyword = val.keyword
+          } else {
+            this.$toast.success('暂无数据')
+          }
+          break
+        case 2:
+          if (val.data.length) {
+            this.$toast('查出' + val.keyword + '相关' + val.data.length + '条数据')
+            this.keyword = val.keyword
+            // this.$set(this, 'tabData', val?.data || [])
+            this.replayFn()
+          } else {
+            this.$toast.fail('暂无数据')
+          }
+          break
+        default:
+          break
+      }
     },
     addFn () {
       this.$router.push('/addgoods')

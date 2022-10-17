@@ -9,6 +9,11 @@ const mutations = {
       setItem('tabbar', value)
     }
     state[key] = value
+  },
+  DEL: (state, { key }) => {
+    if (key === 'tabbar' && Object.prototype.hasOwnProperty.call(state, key)) {
+      delete state[key]
+    }
   }
 }
 

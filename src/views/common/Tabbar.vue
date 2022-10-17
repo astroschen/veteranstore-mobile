@@ -38,29 +38,47 @@ export default {
       console.log('当前路由--->', this.$route.path)
       const arr = this.$route.path.split('/')
       const fil = arr.filter(item => { return item })
-      switch (fil[0]) {
-        case 'home': val = 'home'
-          break
-        case 'addgoods':
-        case 'goods': val = 'goods'
-          break
-        case 'shop': val = 'shop'
-          break
-        case 'user': val = 'user'
-          break
-        default:
-          break
-      }
-      this.$store.commit('common/CHANGE', { key: 'tabbar', value: val.toString() })
+      val = this.filterTabName(fil[0])
+      this.$store.commit('common/CHANGE', { key: 'tabbar', value: val })
+      this.$forceUpdate()
     }
   },
   methods: {
+    // tab切换触发
     onChange (val) {
       const arr = val.split('/')
       const fil = arr.filter(item => { return item })
       this.$store.commit('common/CHANGE', { key: 'tabbar', value: fil[0].toString() })
       this.$router.push(fil[0] === '/' ? val : '/' + val)
+    },
+    // 过滤
+    filterTabName (val) {
+      switch (val) {
+        case 'home':
+          val = 'home'
+          break
+        case 'addgoods':
+        case 'goods':
+          val = 'goods'
+          break
+        case 'shop':
+          val = 'shop'
+          break
+        case 'user':
+          val = 'user'
+          break
+        default:
+          break
+      }
+      return val.toString()
     }
+  },
+  created () {
+    const val = this.$route.path
+    const arr = val.split('/')
+    const fil = arr.filter(item => { return item })
+    this.$store.commit('common/CHANGE', { key: 'tabbar', value: this.filterTabName(fil[0]) })
+    console.log(this.filterTabName(fil))
   },
   mounted () {
     // this.onChange(this.$route.path)

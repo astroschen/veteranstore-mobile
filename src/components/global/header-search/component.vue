@@ -10,6 +10,7 @@
         $util.getValue(data, 'placeholder', '请输入商品名 或扫描条形码')
       "
       @search="onSearch"
+      @clear="onClear"
       show-action
     >
       <template #action>
@@ -33,16 +34,30 @@
 </template>
 <script>
 import Quagga from 'quagga'
+import { requestProduct } from '@/api/common/product'
 window.Quagga = Quagga
 export default {
   name: 'header-search',
   components: {},
-  props: ['data', 'config', 'fn'],
+  props: ['data', 'config', 'fn' ],
   data () {
     return {
       keyword: '',
       scanShow: false,
       sucAudio: null,
+      backData: {
+        // 状态
+        code: 0,
+        // 关键词
+        keyword: '',
+        // 联网参考数据
+        referenc: {},
+        // 扫描数据
+        quagga: {},
+        // 数据库中的数据
+        data: [],
+        backflag: false
+      }
     }
   },
   computed: {},
@@ -69,12 +84,39 @@ export default {
     // 搜索
     onSearch (e) {
       // this.$parent.onSearchBack(e)
-      this.fn && this.fn(e)
+      // 回参会返回搜索条件  0 清除状态 1 条形码查询或扫码状态 2 搜索关键词状态
+      e = e.toString()
+      const param = {}
+      const cn = new RegExp('[\u4E00-\u9FA5]+')
+      const en = new RegExp('A-Za-z]+')
+      const num = new RegExp("[0-9]+")
+      this.backData.keyword = e
+
+      if (cn.test(e) || en.test(e)) {
+        console.log('是中英字符')
+        param.name = e
+        this.backData.code = 2
+      } else if (num.test(e)) {
+        console.log('是数字')
+        param.code = e
+        this.backData.code = 1
+      }
+      requestProduct(param).then(res => {
+        console.log('搜索后的回调数据：', res)
+        this.backData.data = res?.data
+        this.fn && this.fn(this.backData)
+      })
+    },
+    onClear () {
+      this.backData.code = 0
+      this.fn && this.fn(this.backData)
     },
     // 扫码 
     onScan () {
       console.log("触发相机扫码");
+      this.backflag = true
       this.scanShow = true
+      this.backData.code = 1
       this.initQuagga()
     },
     // 初始化quagga
@@ -95,7 +137,8 @@ export default {
           patchSize: 'medium',
           // halfSample: true,
         },
-        // numOfWorkers: 4,
+        // 线程数
+        numOfWorkers: 1,
         // frequency: 10,
         decoder: {
           /* readers: [{
@@ -142,27 +185,41 @@ export default {
           }
         })
         window.Quagga.onDetected(data => {
-          const back = { referenc: {}, quagga: data }
+          if(!this.backflag){
+            return
+          }
+          this.backflag = false
+          this.backData.referenc = {}
+          this.backData.quagga = data
+          this.keyword = data?.codeResult?.code
+          this.backData.keyword = data?.codeResult?.code
+          // 是否搜索
+          /* if(this?.config?.isSearch && data?.codeResult?.code){
+            this.onSearch(data?.codeResult?.code)
+          } */
           // 获取在线参考数据
+          console.log('-------------scan code:', this.backData.keyword)
           if (data?.codeResult?.code) {
             this.$http.get(`https://www.mxnzp.com/api/barcode/goods/details?barcode=${data.codeResult.code}&app_id=puqsalfpnnsruwml&app_secret=ajZ0TEhFRnhIMmNGL0libTJaRTc4UT09`).then(res => {
-              back.referenc = (res?.data?.code == 1 ? res?.data?.data : {})
+              this.backData.referenc = (res?.data?.code == 1 ? res?.data?.data : {})
               this.sucAudio.play()
               this.cencleScan()
-              this.fn && this.fn(back)
+              this.fn && this.fn(this.backData)
             }).catch(() => {
               this.sucAudio.play()
               this.cencleScan()
-              this.fn && this.fn(back)
+              this.fn && this.fn(this.backData)
             })
           }
         })
       })
     },
+    // 扫码成功音效
     initSucScanAudio () {
       this.sucAudio = new Audio()
       this.sucAudio.src = require('@/assets/audio/successful_scan.mp3')
     },
+    // 取消扫码销毁资源
     cencleScan () {
       window.Quagga.offDetected()
       window.Quagga && window.Quagga.stop()
@@ -184,6 +241,15 @@ export default {
 }
 </script>
 
+<style lang="less">
+// quagga debug
+.drawingBuffer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 99;
+}
+</style>
 <style lang="less" scoped>
 .header-search-warp {
   .wrapper {

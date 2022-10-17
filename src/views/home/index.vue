@@ -9,10 +9,15 @@
       @refresh="onRefresh"
     >
     </van-pull-refresh>
-    <!-- <h1>老兵超市-收银平台</h1>
-    <h1>本周收入</h1>
-    <h1>月度收入</h1>
-    <h1>年度收入</h1> -->
+    <h1>Veteran平台</h1>
+    <div class="block-card">
+      <van-icon class="card" color="#4fc08d" size="100" name="todo-list-o" badge="9" />
+      <span class="card">待办</span>
+    </div>
+    <div class="block-card">
+      <van-icon class="card" color="#4fc08d" size="100" name="chart-trending-o" />
+      <span class="card">报表</span>
+    </div>
   </div>
 </template>
 
@@ -62,5 +67,27 @@ export default {
 }
 </script>
 <style lang='less' scoped>
-//@import url(); 引入公共css类
+.home {
+  padding: 10px;
+}
+.block-card {
+  width: calc(50% - 2 * 10px);
+  height: 150px;
+  display: flex;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px #d4d4d4;
+  float: left;
+  margin: 10px;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  .card {
+  }
+}
+.block-card:active {
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: inset 0 0 10px #d4d4d4;
+}
 </style>

@@ -1,7 +1,7 @@
 <template>
   <div class="shop">
     <!-- 搜索 -->
-    <header-search ref="search" :data="searchData"></header-search>
+    <header-search ref="search" :fn="onSeach"></header-search>
     <!-- 下拉刷新 -->
     <van-pull-refresh
       success-text="刷新成功"
@@ -12,14 +12,18 @@
         <div class="van-doc-demo-block__card">
           <van-card
             :num="item.num"
-            :price="item.price"
-            :desc="item.info"
-            :title="item.name + '_' + index"
-            thumb="https://img.yzcdn.cn/vant/ipad.jpeg"
+            :price="item.F_RETAIL_PRICE"
+            :desc="item.S_BRAND"
+            :title="item.S_NAME"
+            :thumb="item.S_IMGURL || 'https://img.yzcdn.cn/vant/ipad.jpeg'"
           >
             <template #tags>
-              <van-tag plain type="danger">标签</van-tag>
-              <van-tag plain type="danger">标签</van-tag>
+              <van-tag v-if="item.I_COUNT" plain type="danger">{{
+                "库存：" + item.I_COUNT + (item.S_UNIT || "个")
+              }}</van-tag>
+              <van-tag v-if="item.S_CAPACITY" plain type="danger">{{
+                "规格：" + item.S_CAPACITY
+              }}</van-tag>
             </template>
             <template #footer>
               <div style="display: flex; flex-wrap: wrap">
@@ -65,6 +69,8 @@
 </template>
 
 <script>
+import { Dialog } from 'vant'
+import { requestProduct } from '@/api/common/product'
 export default {
   name: "shop",
   data () {
@@ -72,25 +78,10 @@ export default {
       // 总数
       count: 0,
       checked: true,
-      goodsData: [
-        { id: 'g01', name: '商品名称', info: '商品信息', price: 1, num: 1, state: true },
-        { id: 'g02', name: '商品名称', info: '商品信息', price: 2.2, num: 1, state: true },
-        { id: 'g03', name: '商品名称', info: '商品信息', price: 3, num: 1, state: true },
-        { id: 'g04', name: '商品名称', info: '商品信息', price: 1, num: 1, state: true },
-        { id: 'g05', name: '商品名称', info: '商品信息', price: 1, num: 1, state: true },
-        { id: 'g06', name: '商品名称', info: '商品信息', price: 1, num: 1, state: true },
-        { id: 'g07', name: '商品名称', info: '商品信息', price: 1, num: 1, state: true },
-        { id: 'g08', name: '商品名称', info: '商品信息', price: 1, num: 1, state: true },
-        { id: 'g09', name: '商品名称', info: '商品信息', price: 1, num: 1, state: true },
-      ],
+      goodsData: [],
       keyword: '',
-      isLoading: false,
-      searchData: {
-        placeholder: '请输入商品名 或扫描条形码',
-        data: {},
-        filter: {}
-      }
-    };
+      isLoading: false
+    }
   },
   computed: {
     getCount () {
@@ -98,7 +89,7 @@ export default {
       this.initCount()
       this.goodsData.map(val => {
         if (val.state) {
-          this.count += val.price * val.num
+          this.count += val.F_RETAIL_PRICE * val.num
         }
       })
       return this.count * 100
@@ -117,8 +108,43 @@ export default {
 
     },
     // 搜索完成的回调
-    onSearchBack (data) {
-      console.log(data)
+    onSeach (val) {
+      console.log('搜索后的回调方法：', val)
+      // 回参会返回搜索条件  0 清除状态 1 条形码查询或扫码状态 2 搜索关键词状态
+      switch (val.code) {
+        case 0:
+          this.keyword = ''
+          break
+        case 1:
+          requestProduct({ code: val?.keyword }).then(val => {
+            console.log('-----', val?.data)
+            if (Array.isArray(val?.data) && val?.data.length) {
+              this.goodsData.push(val?.data[0])
+              this.$toast.success('添加成功')
+            } else {
+            }
+          }).catch(() => {
+          })
+          /* if (val.data.length) {
+            // 数据库中存在直接弹该商品详情窗
+            this.$toast('查出' + val.keyword + '相关' + val.data.length + '条数据')
+            this.keyword = val.keyword
+          } else {
+            this.$toast.fail('暂无数据')
+          } */
+          break
+        case 2:
+          if (val.data.length) {
+            this.$toast('查出' + val.keyword + '相关' + val.data.length + '条数据')
+            this.keyword = val.keyword
+            // this.$set(this, 'tabData', val?.data || [])
+          } else {
+            this.$toast.fail('暂无数据')
+          }
+          break
+        default:
+          break
+      }
     },
     // 初始化合计
     initCount () {
