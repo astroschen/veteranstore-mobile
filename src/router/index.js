@@ -54,7 +54,7 @@ const router = new Router({
 
 router.beforeEach((to, from, next) => {
   // 有token
-  console.log('-----------', to.matched)
+  console.log('-----------', to.matched, store)
   if (store?.state?.user?.access_token) {
     if (to.path === '/login') {
       next({ path: '/', query: to.query })

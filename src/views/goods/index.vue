@@ -39,7 +39,7 @@
                 :desc="item.S_BRAND"
                 :price="item.F_RETAIL_PRICE"
                 :num="(item.I_COUNT || 0) + (item.S_UNIT || '')"
-                :thumb="item.S_IMGURL || 'https://img.yzcdn.cn/vant/ipad.jpeg'"
+                :thumb="item.S_IMGURL || require('@/assets/images/goods.gif')"
                 :lazy-load="true"
               >
                 <template #tags>

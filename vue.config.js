@@ -27,13 +27,6 @@ module.exports = {
     // 此处开启 https
     https: true,
     proxy: {
-      '/gds': {
-        target: 'https://bff.gds.org.cn/',
-        changeOrigin: true,
-        pathRewrite: {
-          '^/local': ''
-        }
-      },
       '/server': {
         target: 'http://localhost:9527/',
         changeOrigin: true,

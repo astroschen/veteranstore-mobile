@@ -171,7 +171,7 @@ export default {
           '确定要重置填写吗？确定后将填入的信息全部清除！',
       }).then(() => {
         console.log('确定重置')
-        this.title = '修改'
+        // this.title = '修改'
         this.$set(this, 'imgArr', [])
         this.goods = {}
       }).catch(() => {

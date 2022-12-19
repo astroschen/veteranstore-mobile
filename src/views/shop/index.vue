@@ -15,7 +15,7 @@
             :price="item.F_RETAIL_PRICE"
             :desc="item.S_BRAND"
             :title="item.S_NAME"
-            :thumb="item.S_IMGURL || 'https://img.yzcdn.cn/vant/ipad.jpeg'"
+            :thumb="item.S_IMGURL || require('@/assets/images/goods.gif')"
           >
             <template #tags>
               <van-tag v-if="item.I_COUNT" plain type="danger">{{
@@ -55,11 +55,20 @@
     </van-pull-refresh>
 
     <!-- 提交 -->
-    <van-submit-bar :price="getCount" button-text="提交订单" @submit="onSubmit">
+    <van-submit-bar :disabled="!goodsData.length" :price="getCount" button-text="开始买单" @submit="onSubmit">
       <van-checkbox v-model="checked" checked-color="#07c160" @click="checkAll">
         全选
       </van-checkbox>
     </van-submit-bar>
+
+    <!-- 买单弹窗 -->
+    <van-dialog v-model="submitPopup" title="账单" confirmButtonText="确认结账" show-cancel-button @confirm="onSubmitPopup">
+      <van-cell-group>
+        <van-cell title="需要支付金额" :value="count" />
+        <van-field v-model="paycount" type="number" label="实际支付金额" placeholder="（未填写表示不用找零）" input-align="right" />
+        <van-cell v-if="backCount>0" title="找零金额" :value="backCount" label="使用现金支付找零的金额" />
+      </van-cell-group>
+    </van-dialog>
 
     <!-- 加载弹窗 -->
     <!-- <van-popup v-model="isLoadingPopup" get-container="shop">
@@ -69,18 +78,21 @@
 </template>
 
 <script>
-import { Dialog } from 'vant'
-import { requestProduct } from '@/api/common/product'
+import { requestProduct, addDealData } from '@/api/common/product'
+import { accAdd, accSub, accMul } from '@/plugins/util/calculate'
 export default {
   name: "shop",
   data () {
     return {
-      // 总数
+      // 总价
       count: 0,
       checked: true,
       goodsData: [],
       keyword: '',
-      isLoading: false
+      isLoading: false,
+      submitPopup: false,
+      // 已支付金额
+      paycount: '',
     }
   },
   computed: {
@@ -89,10 +101,14 @@ export default {
       this.initCount()
       this.goodsData.map(val => {
         if (val.state) {
-          this.count += val.F_RETAIL_PRICE * val.num
+          this.count = accAdd(this.count, accMul(val.F_RETAIL_PRICE, val.num))
         }
       })
-      return this.count * 100
+      return accMul(this.count, 100)
+    },
+    // 找零金额
+    backCount () {
+      return accSub(this.paycount, this.count)
     }
   },
   watch: {
@@ -119,6 +135,9 @@ export default {
           requestProduct({ code: val?.keyword }).then(val => {
             console.log('-----', val?.data)
             if (Array.isArray(val?.data) && val?.data.length) {
+              // 扫码结果 默认选中 默认数量
+              val.data[0].state = true
+              val.data[0].num = 1
               this.goodsData.push(val?.data[0])
               this.$toast.success('添加成功')
             } else {
@@ -145,6 +164,54 @@ export default {
         default:
           break
       }
+    },
+    // 确认结账
+    onSubmitPopup () {
+      // 结账完后返回当前哪些商品库存小于10的提醒
+      console.log({
+        s_product_code: this.fomatData(this.goodsData, 'S_CODE'),
+        s_count: this.fomatData(this.goodsData, 'num'),
+        s_retail_price: this.fomatData(this.goodsData, 'F_RETAIL_PRICE'),
+        i_count_price: this.count,
+        i_profit_price: this.getProfit()
+      })
+      const toast = this.$toast.loading({
+        message: '加载中...',
+        forbidClick: true,  // 背景不可点击
+        duration: 0, // 持续展示 toast
+      })
+      addDealData({
+        s_product_code: this.fomatData(this.goodsData, 'S_CODE'),
+        s_count: this.fomatData(this.goodsData, 'num'),
+        s_retail_price: this.fomatData(this.goodsData, 'F_RETAIL_PRICE'),
+        i_count_price: this.count,
+        i_profit_price: this.getProfit(),
+        s_user: ''
+      }).then(res => {
+        console.log(res)
+        toast.clear()
+        if(res?.data?.data == 1){
+          this.$toast.success('结账成功')
+        }else{
+          this.$toast.fail('结账失败，请联系管理员')
+        }
+      })
+    },
+    // 1,24,234 格式
+    fomatData(data, key){
+      let html = ''
+      data.forEach((val, i) => {
+        html += val[key] + (i < data.length - 1 ? ',' : '')
+      })
+      return html
+    },
+    // 计算利润
+    getProfit(){
+      let count = 0
+      this.goodsData.forEach(val => {
+        count = accAdd(accMul(accSub(val.F_RETAIL_PRICE, val.F_BUYING_PRICE), val.num), count)
+      })
+      return count
     },
     // 初始化合计
     initCount () {
@@ -174,7 +241,7 @@ export default {
     },
     // 提交
     onSubmit () {
-
+      this.submitPopup = true
     },
     // 删除
     removeGoods (item) {

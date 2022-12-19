@@ -45,3 +45,10 @@ export const delProductByCode = (param) => {
  export const updateProductData = (param) => {
   return axiosUtil.postJson('/server/product/updateProductData', param)
 }
+
+/**
+ * 入账
+ */
+export const addDealData = (param) => {
+  return axiosUtil.postJson('/server/product/addDealData', param)
+}
